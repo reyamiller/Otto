@@ -135,9 +135,6 @@ By default, 1µl of sample is added to solutions containing 10, 20, 30, 40, and 
         unit="µl"
     )
 
-Setting Up
-----------
-
 The first thing to do in the ``run()`` function is to define all of the labware and hardware that will be used.
 
 An Opentrons 24 Tube Rack with Eppendorf 1.5 mL Safe-Lock Snapcap is placed in slot 3 of the deck.
