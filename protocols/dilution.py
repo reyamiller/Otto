@@ -58,7 +58,7 @@ def add_parameters(parameters: protocol_api.Parameters):
             default=(i*10),
             minimum=1,
             maximum=100,
-            unit="µL"
+            unit="µl"
         )
     parameters.add_float(
         variable_name="sample_volume",
@@ -67,12 +67,10 @@ def add_parameters(parameters: protocol_api.Parameters):
         default=1,
         minimum=1,
         maximum=20,
-        unit="µL"
+        unit="µl"
     )
 
 def run(protocol: protocol_api.ProtocolContext):
-    # place a 96 20µl tip rack in slot 6 of the robot deck
-    tips = protocol.load_labware("opentrons_96_tiprack_20ul", 6)
     # place a 24 tube rack with 1.5ml safelock snapcap in slot 3 of the robot deck
     tube_rack = protocol.load_labware("opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap", 3)
     # the diluent (water) goes in slot D2 of the tube rack
@@ -100,6 +98,8 @@ def run(protocol: protocol_api.ProtocolContext):
         liquid=main_sample
     )
     
+    # place a 96 20µl tip rack in slot 6 of the robot deck
+    tips = protocol.load_labware("opentrons_96_tiprack_20ul", 6)
     # add a single-channel 20µL pipette to the left mount and use the specified tip rack
     left_pipette = protocol.load_instrument("p20_single_gen2", "left", tip_racks=[tips])
     left_pipette.starting_tip = tips[protocol.params.starting_tip_row + protocol.params.starting_tip_col]
