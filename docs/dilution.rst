@@ -9,7 +9,7 @@ The `Dilution </protocols/dilution.py>`_ protocol dilutes a sample in 5 solution
 
 Both the volume of the sample and the volumes of diluent are defined in the ``add_parameters()`` function to allow for user customization.
 
-By default, 1µl of sample is added to solutions containing 10, 20, 30, 40, and 50 µl of diluent, respectively.
+By default, 1µl of 10ng/µl sample is added to solutions containing 10, 20, 30, 40, and 50 µl of diluent, respectively.
 
 .. code-block:: python
 
@@ -117,4 +117,7 @@ Then the specified sample volume is transferred to each of the slots of diluent.
         loc = "A" + (str) (i+1)
         left_pipette.transfer(protocol.params.sample_volume, main_sample_tube, tube_rack[loc], blow_out=True, blowout_location="destination well")
 
-end of protocol
+Accuracy
+========
+
+When running the protocol with the default values for the sample and diluent volumes, we expect the resultiing solutions to have concentrations (in ng/µl) of 
