@@ -5,7 +5,7 @@
 Pooling
 *******
 
-The `Pooling </protocols/pooling.py>`_ protocol pools liquid from user-specified wells into a single tube.
+The `Pooling <protocols/pooling.py>`_ protocol pools liquid from user-specified wells into a single tube.
 
 The wells are specified in the code before the protocol is run. Users can copy and paste from a spreadsheet or manually change the values in the file.
 
@@ -29,24 +29,6 @@ This data is then converted to comma-separated value (CSV) format.
 
     selected_wells_data = selected_wells_data.replace('\t', ',')
 
-There are 5 tubes which liquid is pooled into, and the volume of liquid in each tube is given as a runtime parameter. By default, the volumes (in µl) are 40, 80, 120, 160, and 200, respectively.
-
-.. code-block:: python
-
-    for i in range(1, 6):
-        name = "volume_" + str(i)
-        display = "Volume " + str(i)
-        desc = "The volume to pool into tube " + str(i) + "."
-        parameters.add_float(
-            variable_name=name,
-            display_name=display,
-            description=desc,
-            default=(i*40),
-            minimum=40,
-            maximum=1000,
-            unit="µL"
-        )
-
 The ``run()`` function starts by reading ``selected_wells_data`` in order to determine which wells to pool from.
 
 .. code-block:: python
@@ -67,23 +49,7 @@ The ``run()`` function starts by reading ``selected_wells_data`` in order to det
                 true_keys.append(key)
         selected_wells.extend(true_keys)
 
-Then we define the tube rack and indicate where the tubes of water are.
-
-.. code-block:: python
-
-    tube_rack = protocol.load_labware("opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap", 3)
-    water = protocol.define_liquid(
-        name="Water",
-        description="The liquid being used to dilute the samples.",
-        display_color="#0051FF"
-    )
-    tube_rack.load_liquid(
-        wells=["A1", "A2", "A3", "A4", "A5"],
-        volume=150,
-        liquid=water
-    )
-
-Next we define the DNA plate, which should hold DNA in the wells specified by ``selected_wells``.
+When we define the sample plate, we can now indicate that the water is in the wells specified by ``selected_wells``.
 
 .. code-block:: python
 
@@ -99,3 +65,20 @@ Next we define the DNA plate, which should hold DNA in the wells specified by ``
         liquid=dna
     )
 
+Before starting, there should be water in a tube in well ``A1`` of the tube rack.
+
+The robot transfers ``x`` µl of water to well ``A2``, where ``x`` = 100 - the number of samples.
+
+.. code-block:: python
+
+    left_pipette.transfer(volume=(100 - len(selected_wells)), source=tube_rack["A1"], dest=tube_rack["A2"], blow_out=True, blowout_location="destination well")
+
+Then 1µl of each sample gets pooled into the tube at well ``A2``.
+
+.. code-block:: python
+
+    for well in selected_wells:
+        left_pipette.transfer(volume=1, source=dna_plate[well], dest=tube_rack["A2"], blow_out=True, blowout_location="destination well")
+
+Accuracy
+========

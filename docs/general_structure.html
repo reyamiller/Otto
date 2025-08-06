@@ -1,0 +1,121 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title></title><style type="text/css">body{
+ font-family: helvetica;
+ color: #222;
+}
+
+li>p{
+ margin-bottom: 0;
+}
+
+.line{
+ margin-bottom: 0.3em;
+ display: table;
+}
+
+.admonition-title {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+aside{
+ float: right;
+ width: 20%;
+ display: table;
+ padding: 1em;
+ margin: 1em;
+ margin-right: 0;
+}
+
+.footnote, .cite{
+ width: 98%;
+ display: table;
+ border: 1px solid #ddd;
+ padding: 0.5%;
+ margin: 0.5%;
+}
+
+.footnote .du-label, .cite .du-label{
+ float: left;
+ height: 100%;
+ width: 5%;
+ margin-right: 1em;
+ padding: 0.5%;
+ text-align: center;
+ display: table;
+}
+
+th, th p{
+ font-weight: bold;
+}
+
+.field-label{
+ font-weight: bold;
+}
+
+ol.arabic{
+ list-style-type: decimal;
+}
+
+ol.loweralpha{
+ list-style-type: lower-alpha;
+}
+
+ol.upperalpha{
+ list-style-type: upper-alpha;
+}
+
+ol.lowerroman{
+ list-style-type: lower-roman;
+}
+
+ol.upperroman{
+ list-style-type: upper-roman;
+}
+
+img.align-left{
+ float: left;
+}
+
+img.align-right{
+ float: right;
+}
+</style></head><body><h1>General Structure</h1><p>Each protocol I've written follows a general basic structure with many shared elements.</p><p>This import line identifies the python file as an Opentrons protocol.</p><pre class="code lang-python">from opentrons import protocol_api</pre><p>The fields in the metadata dictionary will show up on the Opentrons App when you import the protocol in order to provide more information about it.</p><pre class="code lang-python">metadata = {
+    "protocolName": "Protocol Name",
+    "description": "This is a protocol description.",
+    "author": "Reya Miller"
+}</pre><p>The requirements indicate that the protocol will run on an OT-2 robot with version 2.22 of the Opentrons Python API.</p><pre class="code lang-python">requirements = {"robotType": "OT-2", "apiLevel": "2.22"}</pre><section id="the-add-parameters-function"><span id="add-parameters-function"></span><header><h2>The <code>add_parameters()</code> function</h2></header><pre class="code lang-python">def add_parameters(parameters: protocol_api.Parameters):</pre><p>The <code>add_parameters()</code> function allows for greater control of protocols without the need to write extra code. These parameters are entered in the Opentrons app before running the protocol.</p><p>All of my protocols contain at least two parameters, <code>starting_tip_row</code> and <code>starting_tip_col</code>, which specify which tip the pipette should pick up first. This is useful when using a partially-filled tip rack; otherwise the robot assumes there is a tip at slot <code>A1</code> of the rack.</p><pre class="code lang-python">parameters.add_str(
+    variable_name="starting_tip_row",
+    display_name="Starting tip row",
+    description="The row of the tip to start with on the tip rack.",
+    choices=[
+        {"display_name": "A", "value": "A"},
+        {"display_name": "B", "value": "B"},
+        {"display_name": "C", "value": "C"},
+        {"display_name": "D", "value": "D"},
+        {"display_name": "E", "value": "E"},
+        {"display_name": "F", "value": "F"},
+        {"display_name": "G", "value": "G"},
+        {"display_name": "H", "value": "H"}
+    ],
+    default="A"
+)
+parameters.add_str(
+    variable_name="starting_tip_col",
+    display_name="Starting tip column",
+    description="The column of the tip to start with on the tip rack.",
+    choices=[
+        {"display_name": "1", "value": "1"},
+        {"display_name": "2", "value": "2"},
+        {"display_name": "3", "value": "3"},
+        {"display_name": "4", "value": "4"},
+        {"display_name": "5", "value": "5"},
+        {"display_name": "6", "value": "6"},
+        {"display_name": "7", "value": "7"},
+        {"display_name": "8", "value": "8"},
+        {"display_name": "9", "value": "9"},
+        {"display_name": "10", "value": "10"},
+        {"display_name": "11", "value": "11"},
+        {"display_name": "12", "value": "12"}
+    ],
+    default="1"
+)</pre><p>By default, the values for these parameters are <code>A</code> and <code>1</code>, respectively.</p></section><section id="the-run-function"><span id="run-function"></span><header><h2>The <code>run()</code> function</h2></header><p>The <code>run()</code> function contains the all of the code for the actual protocol steps.</p><pre class="code lang-python">def run(protocol: protocol_api.ProtocolContext):</pre><p>The protocol context argument is used to add labware and hardware to the protocol.</p></section></body></html>

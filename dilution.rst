@@ -5,7 +5,7 @@
 Dilution
 ********
 
-The `Dilution </protocols/dilution.py>`_ protocol dilutes a sample in 5 solutions of different specified volumes.
+The `Dilution <protocols/dilution.py>`_ protocol dilutes a sample in 5 solutions of different specified volumes.
 
 Both the volume of the sample and the volumes of diluent are defined in the ``add_parameters()`` function to allow for user customization.
 
@@ -120,4 +120,4 @@ Then the specified sample volume is transferred to each of the slots of diluent.
 Accuracy
 ========
 
-When running the protocol with the default values for the sample and diluent volumes, we expect the resultiing solutions to have concentrations (in ng/µl) of 
+When running the protocol with the default values for the sample and diluent volumes, we expect the resultiing solutions to have concentrations (in ng/µl) of 0.910, 0.476, 0.323, 0.244, and 0.196, respectively.
