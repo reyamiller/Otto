@@ -64,19 +64,6 @@ def add_parameters(parameters: protocol_api.Parameters):
         ],
         default="1"
     )
-    for i in range(1, 6):
-        name = "volume_" + str(i)
-        display = "Volume " + str(i)
-        desc = "The volume to pool into tube " + str(i) + "."
-        parameters.add_float(
-            variable_name=name,
-            display_name=display,
-            description=desc,
-            default=(i*40),
-            minimum=40,
-            maximum=1000,
-            unit="µL"
-        )
 
 def run(protocol: protocol_api.ProtocolContext):
     # read the selected wells data to determine which wells to pool from
@@ -104,7 +91,7 @@ def run(protocol: protocol_api.ProtocolContext):
         display_color="#0051FF"
     )
     tube_rack.load_liquid(
-        wells=["A1", "A2", "A3", "A4", "A5"],
+        wells=["A1"],
         volume=150,
         liquid=water
     )
@@ -130,11 +117,8 @@ def run(protocol: protocol_api.ProtocolContext):
     left_pipette.starting_tip = tips_1[protocol.params.starting_tip_row + protocol.params.starting_tip_col]
     
     # add x µl of water to the eppendorf tube, where x = (100 - number of samples)
-    # left_pipette.transfer(volume=(100 - len(selected_wells)), source=tube_rack["A1"], dest=tube_rack["A2"])
+    left_pipette.transfer(volume=(100 - len(selected_wells)), source=tube_rack["A1"], dest=tube_rack["A2"], blow_out=True, blowout_location="destination well")
     
     # pool the DNA from the selected wells of the plate into the eppendorf tube with water
-    vols = [protocol.params.volume_1, protocol.params.volume_2, protocol.params.volume_3, protocol.params.volume_4, protocol.params.volume_5]
-    for i in range(1,6):
-        loc = "A" + str(i)
-        for well in selected_wells:
-            left_pipette.transfer(volume=(vols[i-1]/len(selected_wells)), source=dna_plate[well], dest=tube_rack[loc], blow_out=True, blowout_location="destination well")
+    for well in selected_wells:
+        left_pipette.transfer(volume=1, source=dna_plate[well], dest=tube_rack["A2"], blow_out=True, blowout_location="destination well")
