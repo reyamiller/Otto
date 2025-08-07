@@ -3,10 +3,12 @@
 Otto
 ****
 
-`General Protocol Structure <_general-structure>`_
+`General Protocol Structure <docs/general_structure.html>`_
 
-`Dilution <_dilution>`_
+`Dilution <docs/dilution.html>`_
 
-`Pooling <_pooling>`_
+`Pooling <docs/pooling.html>`_
 
-`Normalization <_normalization>`_
+`Normalization <docs/normalization.html>`_
+
+`DNA Extraction & Purification <docs/dna_extraction_purification.html>`_
