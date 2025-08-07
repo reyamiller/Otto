@@ -114,8 +114,3 @@ Then the specified sample volume is transferred to each of the slots of diluent.
     for i in range(5):
         loc = "A" + (str) (i+1)
         left_pipette.transfer(protocol.params.sample_volume, main_sample_tube, tube_rack[loc], blow_out=True, blowout_location="destination well")
-
-Accuracy
-========
-
-When running the protocol with the default values for the sample and diluent volumes, we expect the resultiing solutions to have concentrations (in ng/µl) of 0.910, 0.476, 0.323, 0.244, and 0.196, respectively.
