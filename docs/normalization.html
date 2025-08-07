@@ -1,85 +1,40 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title></title><style type="text/css">body{
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+        <title></title><style type="text/css">body{
  font-family: helvetica;
  color: #222;
+ padding: 0px 50px 50px 50px;
 }
-
-li>p{
- margin-bottom: 0;
-}
-
-.line{
- margin-bottom: 0.3em;
- display: table;
-}
-
-.admonition-title {
-    font-size: 1.3em;
-    font-weight: bold;
-}
-
-aside{
- float: right;
- width: 20%;
- display: table;
- padding: 1em;
- margin: 1em;
- margin-right: 0;
-}
-
-.footnote, .cite{
- width: 98%;
- display: table;
- border: 1px solid #ddd;
- padding: 0.5%;
- margin: 0.5%;
-}
-
-.footnote .du-label, .cite .du-label{
- float: left;
- height: 100%;
- width: 5%;
- margin-right: 1em;
- padding: 0.5%;
- text-align: center;
- display: table;
-}
-
-th, th p{
- font-weight: bold;
-}
-
-.field-label{
- font-weight: bold;
-}
-
-ol.arabic{
- list-style-type: decimal;
-}
-
-ol.loweralpha{
- list-style-type: lower-alpha;
-}
-
-ol.upperalpha{
- list-style-type: upper-alpha;
-}
-
-ol.lowerroman{
- list-style-type: lower-roman;
-}
-
-ol.upperroman{
- list-style-type: upper-roman;
-}
-
-img.align-left{
- float: left;
-}
-
-img.align-right{
- float: right;
-}
-</style></head><body><h1>Normalization</h1><p>The <a class="reference external" href="protocols/normalization.py">Normalization</a> protocol normalizes the amount of material in the wells of a plate based on values that are pre-specified by the user.</p><p>The easiest way to input these values is to copy and paste from a spreadsheet. See <a class="reference external" href="https://docs.google.com/spreadsheets/d/1K7OXYfy0i2oJgIokcdIegjBVeeBMqR_-SODV961FI2k/edit?usp=sharing">this</a> link for a template.</p><pre class="code lang-python">water_volume_data = """
+ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+            li {
+                float: left;
+            }
+            li a {
+                display: block;
+                color: black;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+</style></head><body><ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="general_structure.html">General Protocol Structure</a></li>
+            <li><a href="dilution.html">Dilution</a></li>
+            <li><a href="pooling.html">Pooling</a></li>
+            <li><a class="active" href="normalization.html">Normalization</a></li>
+            <li><a href="dna_extraction_purification.html">DNA Extraction & Purification</a></li>
+            <li style="float:right;"><a href="https://github.com/reyamiller/Otto">GitHub</a></li>
+        </ul><h1>Normalization</h1><p>The <a class="reference external" href="protocols/normalization.py">Normalization</a> protocol normalizes the amount of material in the wells of a plate based on values that are pre-specified by the user.</p><p>The easiest way to input these values is to copy and paste from a spreadsheet. See <a class="reference external" href="https://docs.google.com/spreadsheets/d/1K7OXYfy0i2oJgIokcdIegjBVeeBMqR_-SODV961FI2k/edit?usp=sharing">this</a> link for a template.</p><pre><code class="python">water_volume_data = """
         1   2       3       4       5       6       7       8       9       10      11      12
 A   12.4    11.6
 B   11.7    10.7
@@ -103,7 +58,7 @@ F   0.7
 G   0.6
 H   0.9
 """
-dna_volume_data = dna_volume_data.replace('\t', ',')</pre><p>A water plate is defined based on <code>water_volume_data</code>. The protocol uses <code>csv</code> to read the data.</p><pre class="code lang-python">tube_rack = protocol.load_labware("opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap", 5)
+dna_volume_data = dna_volume_data.replace('\t', ',')</code></pre><p>A water plate is defined based on <code>water_volume_data</code>. The protocol uses <code>csv</code> to read the data.</p><pre><code class="python">tube_rack = protocol.load_labware("opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap", 5)
 water_plate = protocol.load_labware("opentrons_96_wellplate_200ul_pcr_full_skirt", 3)
 water = protocol.define_liquid(
     name="Water",
@@ -138,8 +93,8 @@ water_plate.load_liquid(
     wells=wells_used,
     volume=150,
     liquid=water
-)</pre><p>A similar process is used to define the sample plate.</p><p>The robot first adds the specified volumes of water to the corresponding wells of the water plate. Note that this step only uses one pipette tip.</p><pre class="code lang-python">left_pipette.pick_up_tip()
+)</code></pre><p>A similar process is used to define the sample plate.</p><p>The robot first adds the specified volumes of water to the corresponding wells of the water plate. Note that this step only uses one pipette tip.</p><pre><code class="python">left_pipette.pick_up_tip()
 for well in wells_used:
     left_pipette.transfer((float) (water_volumes[well]), tube_rack["A1"], water_plate[well], new_tip="never", blow_out=True, blowout_location="destination well")
-left_pipette.drop_tip()</pre><p>Then the specified volumes of sample are transferred to the corresponding wells of the water plate.</p><pre class="code lang-python">for well in wells_used:
-    left_pipette.transfer((float) (dna_volumes[well]), dna_plate[well], water_plate[well], blow_out=True, blowout_location="destination well")</pre></body></html>
+left_pipette.drop_tip()</code></pre><p>Then the specified volumes of sample are transferred to the corresponding wells of the water plate.</p><pre><code class="python">for well in wells_used:
+    left_pipette.transfer((float) (dna_volumes[well]), dna_plate[well], water_plate[well], blow_out=True, blowout_location="destination well")</code></pre></body></html>

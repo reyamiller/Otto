@@ -77,6 +77,3 @@ Then 1µl of each sample gets pooled into the tube at well ``A2``.
 
     for well in selected_wells:
         left_pipette.transfer(volume=1, source=dna_plate[well], dest=tube_rack["A2"], blow_out=True, blowout_location="destination well")
-
-Accuracy
-========
