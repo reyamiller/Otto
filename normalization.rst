@@ -1,6 +1,4 @@
 
-.. _normalization:
-
 *************
 Normalization
 *************

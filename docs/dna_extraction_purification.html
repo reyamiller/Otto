@@ -1,0 +1,143 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title></title><style type="text/css">body{
+ font-family: helvetica;
+ color: #222;
+}
+
+li>p{
+ margin-bottom: 0;
+}
+
+.line{
+ margin-bottom: 0.3em;
+ display: table;
+}
+
+.admonition-title {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+aside{
+ float: right;
+ width: 20%;
+ display: table;
+ padding: 1em;
+ margin: 1em;
+ margin-right: 0;
+}
+
+.footnote, .cite{
+ width: 98%;
+ display: table;
+ border: 1px solid #ddd;
+ padding: 0.5%;
+ margin: 0.5%;
+}
+
+.footnote .du-label, .cite .du-label{
+ float: left;
+ height: 100%;
+ width: 5%;
+ margin-right: 1em;
+ padding: 0.5%;
+ text-align: center;
+ display: table;
+}
+
+th, th p{
+ font-weight: bold;
+}
+
+.field-label{
+ font-weight: bold;
+}
+
+ol.arabic{
+ list-style-type: decimal;
+}
+
+ol.loweralpha{
+ list-style-type: lower-alpha;
+}
+
+ol.upperalpha{
+ list-style-type: upper-alpha;
+}
+
+ol.lowerroman{
+ list-style-type: lower-roman;
+}
+
+ol.upperroman{
+ list-style-type: upper-roman;
+}
+
+img.align-left{
+ float: left;
+}
+
+img.align-right{
+ float: right;
+}
+</style></head><body><h1>DNA Extraction &amp; Purification</h1><p>The <a class="reference external" href="protocols/dna_extraction_purification.py">DNA Extraction &amp; Purification</a> protocol follows steps 6-18 of the Omega Bio-tek Mag-Bind® Blood &amp; Tissue DNA HDQ 96 Kit Quick Guide for DNA extraction and purification from up to 10 mg tissue.</p><p>The wells containing tissue are specified in the code, and can be changed manually or pasted from a spreadsheet.</p><p>Note that columns must be filled in order, and one column must be full before moving on to the next one.</p><pre class="code lang-python">sample_wells_data = """
+        1   2       3       4       5       6       7       8       9       10      11      12
+A   TRUE    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+B   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+C   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+D   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+E   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+F   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+G   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+H   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+"""
+sample_wells_data = sample_wells_data.replace('\t', ',')</pre><p>This protocol uses both the 8-channel and single-channel pipettes, so there are three parameters for starting tips: <code>multi_starting_col</code>, <code>single_starting_row</code>, and <code>single_starting_col</code>.
+Since the 8-channel pipette picks up an entire column of tips at a time, it is best to use separate tip racks for the pipettes. The starting row for the 8-channel pipette tips is always row A, so we don't need a parameter for that.</p><p>The <code>run</code> function starts by reading the data given for the sample well plate. <code>selected_wells</code> is a list of every well that contains a sample.</p><pre class="code lang-python">csv_wells_data = sample_wells_data.splitlines()[1:]
+wells_data_reader = csv.DictReader(csv_wells_data)
+selected_wells = []
+for row in wells_data_reader:
+    r = row[""]
+    for i in range(1,13):
+        new_key = r + str(i)
+        row[new_key] = row.pop(f'{i}')
+    del row[""]
+    keys = list(row.keys())
+    true_keys = []
+    for key in keys:
+        if row[key] == "TRUE":
+            true_keys.append(key)
+    selected_wells.extend(true_keys)</pre><p>Then the number of columns in the plate that contain samples, <code>cols</code>, is calculated by integer division of the number of wells used by 8 (the number of wells in a column).</p><pre class="code lang-python">cols = math.ceil(len(selected_wells) / 8)</pre><p>The last thing to do with the wells data is to create <code>sample_wells</code>, which is a list of length <code>cols</code> in which every item is itself a list representing one column of the well plate.</p><pre class="code lang-python">sample_wells = []
+for i in range(cols):
+    start_index = 8 * i
+    if i == cols-1:
+        sample_wells.insert(i, selected_wells[start_index:])
+    else:
+        sample_wells.insert(i, selected_wells[start_index:start_index+8])</pre><p>Aside from the standard labware on the deck, the protocol also loads a magnetic plate in the <em>off-deck</em> location.
+The protocol pauses at various points for the user to move this plate on and off the deck.</p><pre class="code lang-python">magnetic_block = protocol.load_labware("96well_plate_2000ul_on_magnet_plate", protocol_api.OFF_DECK)</pre><p>Because many similar steps are performed throughout this protocol, we utilize two custom functions. The first of these is <code>add_and_mix</code>.
+<code>add_and_mix</code> takes in two parameters: <code>vol</code>, the volume to add to the samples, and <code>source</code>, a list of wells that contain the liquid to be added. This list can contain just one well, but when dealing with greater numbers of samples, it is possible that multiple reservoir wells will have to contain the same liquid to account for the amount needed. The function automatically determines which well to aspirate from if this is the case.
+As its name would suggest, <code>add_and_mix</code> adds the specified volume of specified liquid to each of the samples and mixes the solution by pipetting up and down repeatedly.</p><pre class="code lang-python">def add_and_mix(vol: float, source: list[protocol_api.Well]):
+    src = source[i // (12 // len(source))]
+    if i == cols-1:
+        for well in sample_wells[i]:
+            left_pipette.transfer(volume=vol, source=src, dest=sample_plate[well], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, 250))
+    else:
+        loc = "A" + str(i+1)
+        right_pipette.transfer(volume=vol, source=src, dest=loc, blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, 250))</pre><p>The second function is <code>aspirate_supernatant</code>, which aspirates and discards the supernatant in each well after the Mag-Bind® particles have been cleared from the solution.
+<code>aspirate_supernatant</code> has one parameter, <code>num_aspirations</code>, to determine how many times to perform this process.</p><pre class="code lang-python">def aspirate_supernatant(num_aspirations: int):
+    for i in range(cols):
+        if i == cols-1:
+            for well in sample_wells[i]:
+                left_pipette.pick_up_tip()
+                for j in range(num_aspirations):
+                    left_pipette.aspirate(location=magnetic_block[well].bottom(z=-1), volume=250)
+                    left_pipette.dispense(location=liquid_waste["A1"].bottom(z=5))
+                left_pipette.drop_tip()
+        else:
+            loc = "A" + str(i+1)
+            right_pipette.pick_up_tip()
+            for j in range(num_aspirations):
+                right_pipette.aspirate(location=magnetic_block[loc].bottom(z=-1), volume=250)
+                right_pipette.dispense(location=liquid_waste["A1"].bottom(z=5))
+            right_pipette.drop_tip()</pre><p>From here the protocol just follows the steps as given in the Quick Guide, making calls to <code>add_and_mix</code> and <code>aspirate_supernatant</code> as needed accordingly.
+However, there are multiple points in the protocol that require steps to be performed manually by the user.</p><p>For instance, after adding the AL Buffer and HDQ Binding Buffer, the protocol pauses so the user can add the binding beads to the samples.</p><pre class="code lang-python">protocol.pause("Add binding beads.")</pre><p>Every step that involves putting the well plate on a magnetic separation device is also a manual action. The protocol pauses so the user can put the magnetic block on the deck.
+Note that the robot sees the well plate and the well plate on the magnetic block as two separate pieces of labware, even though you're just putting the well plate on top of the magnet.</p><pre class="code lang-python">protocol.move_labware(sample_plate, new_location=protocol_api.OFF_DECK)
+protocol.move_labware(magnetic_block, new_location="6")</pre><p>The protocol will not continue until the user indicates in the Opentrons app that these manual steps have been completed.</p></body></html>
