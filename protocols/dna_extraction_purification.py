@@ -89,6 +89,7 @@ def add_parameters(parameters: protocol_api.Parameters):
 def run(protocol: protocol_api.ProtocolContext):
     csv_wells_data = sample_wells_data.splitlines()[1:]
     wells_data_reader = csv.DictReader(csv_wells_data)
+    
     selected_wells = []
     for row in wells_data_reader:
         r = row[""]
