@@ -111,13 +111,13 @@ This list can contain just one well, but when dealing with greater numbers of sa
                 right_pipette.dispense(location=dest[loc].bottom(z=5))
             right_pipette.drop_tip()</code></pre><p>These are the only functions needed for the DNA Extraction/Purification protocol, but the Total RNA Purification and DNA/RNA Extraction protocols have a third function, <code>add_mix_pellet_aspirate</code>.
 This function calls <code>add_and_mix</code>, transfers the sample plate to the magnetic block, calls <code>aspirate supernatant</code>, and then removes the sample plate from the magnetic block.</p><p>For the Total RNA Protocol, <code>add_mix_pellet_aspirate</code> has just two parameters: <code>vol</code> and <code>source</code>, the same ones as <code>add_and_mix</code>. (<code>aspirate_supernatant</code> is called with <code>num_aspirations</code> set to 3.)</p><p>For the DNA Extraction/Purification protocol, the function takes in seven parameters:
-* <code>vol</code>: The volume to be transferred, in µl, for <code>add_and_mix</code>.
-* <code>source</code>: A list of wells containing the liquid to be aspirated for <code>add_and_mix</code>.
-* <code>dest</code>: The destination plate in which to dispense the liquid for <code>add_and_mix</code>.
-* <code>num_aspirations</code>: The number of times to aspirate the supernatant from any one well for <code>aspirate_supernatant</code>.
-* <code>source_2</code>: The plate from which to aspirate the supernatant for <code>aspirate_supernatant</code>.
-* <code>dest_2</code>: The location in which to dispense the supernatant for <code>aspirate_supernatant</code>.
-* <code>remove_magnet</code>: Whether or not to remove the plate from the magnet at the end of the function. True by default.</p><pre><code class="python">def add_mix_pellet_aspirate(vol: float, source: list[protocol_api.Well], dest: protocol_api.Labware, num_aspirations: int, source_2: protocol_api.Labware, dest_2: protocol_api.Labware, remove_magnet=True):
+<ul><li><code>vol</code>: The volume to be transferred, in µl, for <code>add_and_mix</code>.</li>
+<li><code>source</code>: A list of wells containing the liquid to be aspirated for <code>add_and_mix</code>.</li>
+<li><code>dest</code>: The destination plate in which to dispense the liquid for <code>add_and_mix</code>.</li>
+<li><code>num_aspirations</code>: The number of times to aspirate the supernatant from any one well for <code>aspirate_supernatant</code>.</li>
+<li><code>source_2</code>: The plate from which to aspirate the supernatant for <code>aspirate_supernatant</code>.</li>
+<li><code>dest_2</code>: The location in which to dispense the supernatant for <code>aspirate_supernatant</code>.</li>
+<li><code>remove_magnet</code>: Whether or not to remove the plate from the magnet at the end of the function. True by default.</li></ul></p><pre><code class="python">def add_mix_pellet_aspirate(vol: float, source: list[protocol_api.Well], dest: protocol_api.Labware, num_aspirations: int, source_2: protocol_api.Labware, dest_2: protocol_api.Labware, remove_magnet=True):
     add_and_mix(vol, source, dest)
     new_loc = "5"
     if dest == rna_plate:
