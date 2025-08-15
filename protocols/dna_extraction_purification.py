@@ -89,7 +89,6 @@ def add_parameters(parameters: protocol_api.Parameters):
 def run(protocol: protocol_api.ProtocolContext):
     csv_wells_data = sample_wells_data.splitlines()[1:]
     wells_data_reader = csv.DictReader(csv_wells_data)
-    
     selected_wells = []
     for row in wells_data_reader:
         r = row[""]
@@ -200,10 +199,10 @@ def run(protocol: protocol_api.ProtocolContext):
             src = source[i // (12 // len(source))]
             if i == cols-1:
                 for well in sample_wells[i]:
-                    left_pipette.transfer(volume=vol, source=src, dest=sample_plate[well], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, 250))
+                    left_pipette.transfer(volume=vol, source=src, dest=sample_plate[well], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(50, 250))
             else:
                 loc = "A" + str(i+1)
-                right_pipette.transfer(volume=vol, source=src, dest=loc, blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, 250))
+                right_pipette.transfer(volume=vol, source=src, dest=loc, blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(50, 250))
     
     def aspirate_supernatant(num_aspirations: int):
         """
@@ -227,6 +226,20 @@ def run(protocol: protocol_api.ProtocolContext):
                     right_pipette.dispense(location=liquid_waste["A1"].bottom(z=5))
                 right_pipette.drop_tip()
     
+    def mix_beads(pipette: protocol_api.InstrumentContext, well: protocol_api.Well):
+        if pipette == left_pipette:
+            height = 0
+            for j in range(50):
+                left_pipette.aspirate(volume=250, location=dna_plate[well].bottom(z=height))
+                left_pipette.dispense(location=dna_plate[well].bottom(z=height))
+                height += 2
+        else:
+            height = 0
+            for j in range(50):
+                right_pipette.aspirate(volume=250, location=dna_plate[well].bottom(z=height))
+                right_pipette.dispense(location=dna_plate[well].bottom(z=height))
+                height += 2
+    
     # add 230µL AL Buffer
     # mix (pipette up and down 20x)
     add_and_mix(230, [reservoir_1["A1"], reservoir_1["A2"], reservoir_1["A3"], reservoir_1["A4"]])
@@ -247,12 +260,13 @@ def run(protocol: protocol_api.ProtocolContext):
         if i == cols-1:
             for well in sample_wells[i]:
                 left_pipette.pick_up_tip()
-                left_pipette.mix(repetitions=20, volume=250, location=sample_plate[well])
+                mix_beads(left_pipette, well)
                 left_pipette.drop_tip()
         else:
             loc = "A" + str(i+1)
             right_pipette.pick_up_tip()
-            right_pipette.mix(repetitions=20, volume=250, location=sample_plate[loc])
+            mix_beads(right_pipette, well)
+            right_pipette.drop_tip()
     
     # place plate on magnetic separation device
     protocol.move_labware(sample_plate, new_location=protocol_api.OFF_DECK)

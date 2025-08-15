@@ -6,7 +6,7 @@ import math
 # metadata
 metadata = {
     "protocolName": "DNA and RNA Purification with Zymo Quick-DNA/RNA MagBead Kit",
-    "description": "This is a description of the protocol.",
+    "description": "Follows the steps given in part IV of the Zymo Research Quick-DNA/RNA™ MagBead protocol to extract and purify DNA and RNA.",
     "author": "Reya Miller"
 }
 
@@ -170,10 +170,10 @@ def run(protocol: protocol_api.ProtocolContext):
             src = source[i // (12 // len(source))]
             if i == cols-1:
                 for well in sample_wells[i]:
-                    left_pipette.transfer(volume=vol, source=src, dest=dest[well], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, mix_vol))
+                    left_pipette.transfer(volume=vol, source=src, dest=dest[well], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(50, mix_vol))
             else:
                 loc = "A" + str(i+1)
-                right_pipette.transfer(volume=vol, source=src, dest=dest[loc], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(10, mix_vol))
+                right_pipette.transfer(volume=vol, source=src, dest=dest[loc], blow_out=True, blowout_location="destination well", new_tip="always", mix_after=(50, mix_vol))
     
     def aspirate_supernatant(num_aspirations: int, source: protocol_api.Labware, dest: protocol_api.Labware):
         """
@@ -224,6 +224,20 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.move_labware(source_2, new_location=protocol_api.OFF_DECK)
             protocol.move_labware(dest, new_location=new_loc)
     
+    def mix_beads(pipette: protocol_api.InstrumentContext, well: protocol_api.Well):
+        if pipette == left_pipette:
+            height = 0
+            for j in range(50):
+                left_pipette.aspirate(volume=250, location=dna_plate[well].bottom(z=height))
+                left_pipette.dispense(location=dna_plate[well].bottom(z=height))
+                height += 2
+        else:
+            height = 0
+            for j in range(50):
+                right_pipette.aspirate(volume=250, location=dna_plate[well].bottom(z=height))
+                right_pipette.dispense(location=dna_plate[well].bottom(z=height))
+                height += 2
+    
     # 1. add 500µl (2.5 volumes) DNA/RNA Lysis Buffer to the 200µl sample and mix well
     add_and_mix(500, reservoir_1.wells()[0:4], dna_plate)
     
@@ -235,7 +249,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 left_pipette.mix(repetitions=5, volume=40, location=reservoir_2.wells()[9])
                 left_pipette.aspirate(30, location=reservoir_2.wells()[9])
                 left_pipette.dispense(location=dna_plate[well])
-                left_pipette.mix(repetitions=10, volume=250, location=dna_plate[well])
+                mix_beads(left_pipette, well)
                 left_pipette.drop_tip()
         else:
             loc = "A" + str(i+1)
@@ -243,7 +257,7 @@ def run(protocol: protocol_api.ProtocolContext):
             right_pipette.mix(repetitions=5, volume=40, location=reservoir_2.wells()[9])
             right_pipette.aspirate(30, location=reservoir_2.wells()[9])
             right_pipette.dispense(location=dna_plate[loc])
-            right_pipette.mix(repetitions=10, volume=250, location=dna_plate[loc])
+            mix_beads(right_pipette, loc)
             right_pipette.drop_tip()
     
     # 3. transfer the plate to the magnetic stand until beads (DNA) have pelleted, then transfer the cleared
